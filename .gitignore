@@ -16,3 +16,4 @@ profiles.clj
 /resources/public/js
 /resources/config.edn
 /target
+/client/target

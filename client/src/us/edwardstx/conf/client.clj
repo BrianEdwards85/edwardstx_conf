@@ -1,28 +1,21 @@
 (ns us.edwardstx.conf.client
   (:require [clojure.data.json :as json]
             [clojure.string :as s]
-            [clojure.java.io :as io]
             [digest :refer [md5]]
+            [config.core :refer [env]]
             [lock-key.core :as crypt]
             [byte-streams :as bs]
             [aleph.http :as http]))
 
-(def secret
-  (delay
-   (-> "key.txt"
-       io/resource
-       io/file
-       slurp
-       s/trim)))
-
 (defn get-conf-impl [s]
-  (let [m (md5 @secret)
+  (let [secret (:conf-secret env)
+        m (md5 secret)
         headers {:headers {:keyhash m}}]
-    (-> (str "https://conf.edwardstx.us/conf/" s)
-        @(client/get headers)
+    (-> (str (:conf-host env) s)
+        @(http/get headers)
         :body
         bs/to-string
-        (crypt/decrypt-from-base64 @secret)
+        (crypt/decrypt-from-base64 secret)
         (json/read-str :key-fn keyword))))
 
 (def get-conf (memoize get-conf-impl))

@@ -1,6 +1,5 @@
 (ns us.edwardstx.conf.client
   (:require [clojure.data.json :as json]
-            [clojure.string :as s]
             [digest :refer [md5]]
             [config.core :refer [env]]
             [lock-key.core :as crypt]
@@ -12,7 +11,8 @@
         m (md5 secret)
         headers {:headers {:keyhash m}}]
     (-> (str (:conf-host env) s)
-        @(http/get headers)
+        (http/get headers)
+        deref
         :body
         bs/to-string
         (crypt/decrypt-from-base64 secret)

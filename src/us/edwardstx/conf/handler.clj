@@ -2,15 +2,27 @@
   (:require [compojure.core :refer [GET defroutes]]
             [manifold.deferred :as d]
             [ring.middleware.reload :refer [wrap-reload]]
-            [ring.middleware.cookies :refer [wrap-cookies]]
-            [compojure.route :refer [not-found resources]]))
+            [us.edwardstx.conf.orchestrator :refer [get-encrypted-conf]]
+            [compojure.route :refer [not-found]]))
 
 (def semaphore (d/deferred))
 
-(defn root [r]
-  "Hello World.")
+(def notfound {:status 404 :body "not found"})
 
-(defroutes routes
-  (GET "/" [] root))
+(defn encrypted-conf [r]
+  (let [conf-name (get-in r [:route-params :id])
+        keyhash (get-in r [:headers "keyhash"])]
+    (d/chain
+     (get-encrypted-conf conf-name)
+     (fn [{:keys [md5 conf]}]
+       (if (= keyhash md5)
+         conf
+         notfound))))) 
 
-(def app (-> routes wrap-cookies wrap-reload))
+(defroutes app-routes
+  (GET "/" [] "Hello World")
+  (GET "/conf/:id" [id] encrypted-conf)
+  (not-found notfound))
+
+(def app
+  (wrap-reload app-routes))

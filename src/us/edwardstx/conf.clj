@@ -19,7 +19,7 @@
                        nil)))
 
 (defn -main [& args]
-  (start-or-restart-server 8888)
+  (start-or-restart-server 5001)
   @semaphore
   (stop-server)
   )

@@ -6,9 +6,10 @@
             [byte-streams :as bs]
             [aleph.http :as http]))
 
-(defn get-conf-impl [s]
+(defn get-conf-impl []
   (let [secret (:conf-secret env)
         m (md5 secret)
+        s (:service-name env)
         headers {:headers {:keyhash m}}]
     (-> (str (:conf-host env) s)
         (http/get headers)

@@ -1,14 +1,6 @@
 (ns us.edwardstx.conf.data.db
   (:require [hikari-cp.core :refer :all]
             [config.core :refer [env]]))
-;;            [clojure.data.json :as json]
-;;            [clojure.java.io :as io]))
-
-;;(def ds-options
-;;   (-> "db.json"
-;;       io/resource
-;;       slurp
-;;       (json/read-str :key-fn keyword)))
 
 (def ds-options
     {:jdbc-url (:jdbc-url env)

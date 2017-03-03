@@ -8,13 +8,13 @@
 
 
 (defn get-service-conf [service]
-  (d/future 
+  (d/future
     (apply hash-map (mapcat
                      (fn [x] [(:key x) (:val x)])
                      (get-service-config-sql {:service service})))))
 
 (defn get-service-secret [service]
-  (d/future 
+  (d/future
     (-> {:service service}
         get-service-secret-sql
         first

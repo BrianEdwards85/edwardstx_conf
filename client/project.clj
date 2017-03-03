@@ -1,4 +1,4 @@
-(defproject us.edwardstx/conf-client "0.4.0"
+(defproject us.edwardstx/conf-client "0.4.3"
   :description "Client for getting service config from config service"
   :url "https://github.com/BrianEdwards85/edwardstx_conf"
   :license {:name "Eclipse Public License"

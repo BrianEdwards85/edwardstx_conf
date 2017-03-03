@@ -33,9 +33,10 @@
   (d/chain
    (http/post (str "https://conf.edwardstx.us/api/v1/conf/" service) {:body token})
    :body
-   bs/to-string)
+   bs/to-string
+   crypto/decode-base64
    #(crypto/decrypt key % ec-cipher)
-   json/read-str)
+   #(json/read-str % :key-fn keyword)))
 
 (defn get-conf
   ([] (get-conf-v0))

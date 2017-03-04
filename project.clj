@@ -31,7 +31,7 @@
 
   :main us.edwardstx.conf
   :profiles {:uberjar {:aot [us.edwardstx.conf.data.db]}
-             :dev {:resource-paths ["env/dev/resources"]
+             :dev {:resource-paths ["env/dev/resources" "resources"]
                    :env {:dev true}} }
 
   )

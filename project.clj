@@ -16,9 +16,8 @@
                  [com.rpl/specter "0.13.0"]
                  [compojure "1.5.1"]
                  [aleph "0.4.2-alpha12"]
+                 [com.stuartsierra/component "0.3.2"]
 
-                 [lock-key "1.4.1"]
-                 [digest "1.4.5"]
                  [buddy "1.2.0"]
                  [clj-crypto "1.0.2"
                   :exclusions [org.bouncycastle/bcprov-jdk15on bouncycastle/bcprov-jdk16]]
@@ -31,7 +30,9 @@
   :repositories [["spring.milestone" "https://repo.spring.io/libs-milestone"]]
 
   :main us.edwardstx.conf
-  :profiles {:uberjar {:aot [us.edwardstx.conf.data.db]}}
+  :profiles {:uberjar {:aot [us.edwardstx.conf.data.db]}
+             :dev {:resource-paths ["env/dev/resources"]
+                   :env {:dev true}} }
 
   )
 

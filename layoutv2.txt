@@ -1,0 +1,30 @@
+root/
+-project.clj
+-resources/
+--log4j2.json          Only STDOUT
+--sql/
+---data.sql
+-src/
+--us/edwardstx/
+---conf.clj
+---conf/
+----http.clj
+----nrepl.clj
+----krypto.clj
+----handler.clj
+----parser.clj
+----orchestrator.clj
+----data/
+-----db.clj             Componenet
+-----data.clj
+-env
+--dev
+---resources/
+----config.edn
+---clj
+----us/edwardstx/conf/
+-----middleware.clj
+--prod
+---clj
+----us/edwardstx/conf/
+-----middleware.clj

@@ -8,9 +8,11 @@
 
 (def notfound {:status 404 :body "not found"})
 
-(defn wrap-orchestrator [orchestrator handler]
+(defn wrap-orchestrator [orchestrator semaphore handler]
   (fn [request]
-    (handler (assoc request :orchestrator orchestrator))))
+    (handler (assoc request
+                    :orchestrator orchestrator
+                    :semaphore semaphore))))
 
 (denf resp-or-notfound [x]
       (if x
@@ -30,13 +32,13 @@
    (POST "/api/v1/conf/:id" [id] get-conf )
    (GET "/api/v1/health" "Healthy")))
 
-(defrecord Handler [http-handler orchestrator]
+(defrecord Handler [http-handler semaphore orchestrator]
   component/Lifecycle
 
   (start [this]
     (->> (app-routes)
-         (wrap-orchestrator orchestrator)
-         (assoc this :http-handler)))
+         (wrap-orchestrator orchestrator semaphore)
+         (assoc this :semaphore semaphore :http-handler)))
 
   (stop [this]
     (assoc this :http-handler nil)))

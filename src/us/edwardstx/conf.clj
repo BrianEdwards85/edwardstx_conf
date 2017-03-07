@@ -4,6 +4,8 @@
             [us.edwardstx.conf.data.conf :as db-conf]
             [us.edwardstx.conf.data.db :as db]
             [us.edwardstx.conf.krypto :as krypto]
+            [us.edwardstx.conf.server :as server]
+            [us.edwardstx.conf.handler :refer [new-handler]]
             [us.edwardstx.conf.orchestrator :as orchestrator]))
 
 
@@ -15,5 +17,12 @@
             [:db])
    :orchestrator (component/using
                   (orchestrator/new-orchestrator)
-                  [:db :krypto])))
+                  [:db :krypto])
+   :handler (component/using
+             (new-handler)
+             [:orchestrator])
+   :server (component/using
+            (server/new-http-server env)
+            [:handler])
+   ))
 

@@ -3,8 +3,7 @@
             [manifold.deferred :as d]
             [yesql.core :refer [defqueries]]))
 
-(defqueries "sql/services.sql"
-  {:connection {:datasource  ds}})
+(defqueries "sql/services.sql")
 
 (defn get-service-key [db service]
   (d/future

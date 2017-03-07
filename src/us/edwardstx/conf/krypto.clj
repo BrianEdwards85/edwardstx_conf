@@ -3,8 +3,8 @@
             [manifold.deferred :as d]
             [clojure.tools.logging :as log]
             [buddy.sign.jwt :as jwt]
-            [us.edwardstx.conf.data.services :refer [get-service-key]]
-            ))
+            [com.stuartsierra.component :as component]
+            [us.edwardstx.conf.data.services :as services]))
 
 (def ec-cipher (crypto/create-cipher "ECIES" ))
 
@@ -21,10 +21,10 @@
   (start [this]
     (log/info "Loading Krypto")
     (->> "auth.edwardstx.us"
-         get-service-key
+         (services/get-service-key db)
          deref
          read-public-key
-         (assoc this :key-cache (atom {}):authority-key)))
+         (assoc this :key-cache (atom {}) :authority-key )))
 
   (stop [this]
     (assoc this :authority-key nil)))
@@ -41,7 +41,7 @@
       nil)))
 
 (defn load-service-key [krypto service]
-  (let [service-key-str (get-service-key service)
+  (let [service-key-str (services/get-service-key (:db krypto) service)
         service-key  (d/chain service-key-str read-public-key)
         service-key-map (d/chain
                          (d/zip service-key-str service-key)
@@ -64,4 +64,10 @@
                               (assoc claims :key-map km)
                               nil))))
     nil))
+
+(defn clear-cache [krypto]
+  (reset! (:key-cache krypto) {}))
+
+(defn encrypt [key d]
+  (crypto/encode-base64-as-str (crypto/encrypt key d ec-cipher)))
 

@@ -3,6 +3,7 @@
             [clojure.tools.logging :as log]
             [us.edwardstx.conf.orchestrator :as orchestrator]
             [compojure.core :refer [GET POST routes]]
+            [compojure.route :refer [not-found]]
             [byte-streams :as bs]
             [manifold.deferred :as d]))
 
@@ -14,7 +15,7 @@
                     :orchestrator orchestrator
                     :semaphore semaphore))))
 
-(denf resp-or-notfound [x]
+(defn resp-or-notfound [x]
       (if x
         x
         notfound))
@@ -27,10 +28,12 @@
              resp-or-notfound)))
 
 
-(def app-routes []
+(defn app-routes []
   (routes
+   (GET "/" [] "Configuration Service")
    (POST "/api/v1/conf/:id" [id] get-conf )
-   (GET "/api/v1/health" "Healthy")))
+   (GET "/api/v1/health" [] "Healthy")
+   (not-found notfound)))
 
 (defrecord Handler [http-handler semaphore orchestrator]
   component/Lifecycle
@@ -44,5 +47,5 @@
     (assoc this :http-handler nil)))
 
 (defn new-handler []
-  (map->Handler {}))
+  (map->Handler {:semaphore (d/deferred)}))
 

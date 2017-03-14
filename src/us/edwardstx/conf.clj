@@ -6,8 +6,10 @@
             [us.edwardstx.conf.krypto :as krypto]
             [us.edwardstx.conf.server :as server]
             [us.edwardstx.conf.handler :refer [new-handler]]
-            [us.edwardstx.conf.orchestrator :as orchestrator]))
+            [us.edwardstx.conf.orchestrator :as orchestrator])
+  (:gen-class))
 
+(defonce system (atom {}))
 
 (defn init-system [env]
   (component/system-map
@@ -25,4 +27,11 @@
             (server/new-http-server env)
             [:handler])
    ))
+
+(defn -main [& args]
+  (reset! system (init-system env))
+  (swap! system component/start)
+  (deref (get-in @system [:handler :semaphore]))
+  (component/stop @system)
+  (shutdown-agents))
 

@@ -29,8 +29,10 @@
                   :exclusions [org.springframework/spring-web org.springframework/spring-tx]]]
   :repositories [["spring.milestone" "https://repo.spring.io/libs-milestone"]]
 
+  :uberjar-name "conf.jar"
+
   :main us.edwardstx.conf
-  :profiles {:uberjar {:aot [us.edwardstx.conf.data.db]}
+  :profiles {:uberjar {:aot :all}
              :dev {:resource-paths ["env/dev/resources" "resources"]
                    :env {:dev true}} }
 

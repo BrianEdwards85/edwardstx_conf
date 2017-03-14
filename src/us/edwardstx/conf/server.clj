@@ -7,9 +7,8 @@
   component/Lifecycle
 
   (start [this]
-    (let [port (:port env)]
       (assoc this
-             :http-server (http/start-server handler port))))
+             :http-server (http/start-server (:http-handler handler) env)))
 
   (stop [this]
     (.close http-server)

@@ -1,39 +1,51 @@
 (ns us.edwardstx.conf.handler
-  (:require [compojure.core :refer [GET POST defroutes]]
-            [manifold.deferred :as d]
+  (:require [com.stuartsierra.component :as component]
+            [clojure.tools.logging :as log]
+            [us.edwardstx.conf.orchestrator :as orchestrator]
+            [compojure.core :refer [GET POST routes]]
+            [compojure.route :refer [not-found]]
             [byte-streams :as bs]
-;;            [ring.middleware.reload :refer [wrap-reload]]
-            [us.edwardstx.conf.orchestrator :refer [get-encrypted-conf validate-token-get-encrypt-conf]]
-            [compojure.route :refer [not-found]]))
-
-(def semaphore (d/deferred))
+            [manifold.deferred :as d]))
 
 (def notfound {:status 404 :body "not found"})
 
-(defn encrypted-conf [r]
-  (let [conf-name (get-in r [:route-params :id])
-        keyhash (get-in r [:headers "keyhash"])]
-    (d/chain
-     (get-encrypted-conf conf-name)
-     (fn [{:keys [md5 conf]}]
-       (if (= keyhash md5)
-         conf
-         notfound)))))
+(defn wrap-orchestrator [orchestrator semaphore handler]
+  (fn [request]
+    (handler (assoc request
+                    :orchestrator orchestrator
+                    :semaphore semaphore))))
+
+(defn resp-or-notfound [x]
+      (if x
+        x
+        notfound))
 
 (defn get-conf [r]
   (let [conf-name (get-in r [:route-params :id])
-        key (-> r :body bs/to-string)]
-    (d/chain
-     (validate-token-get-encrypt-conf conf-name key)
-     #(if-let [resp %]
-        resp
-        notfound))))
+        key (-> r :body bs/to-string)
+        orchestrator (:orchestrator r)]
+    (d/chain (orchestrator/validate-token-and-encrypt-conf orchestrator conf-name key)
+             resp-or-notfound)))
 
-(defroutes app-routes
-  (GET "/" [] "Hello World")
-  (POST "/api/v1/conf/:id" [id] get-conf )
-  (GET "/conf/:id" [id] encrypted-conf)
-  (not-found notfound))
 
-(def app app-routes)
-;;  (wrap-reload app-routes))
+(defn app-routes []
+  (routes
+   (GET "/" [] "Configuration Service")
+   (POST "/api/v1/conf/:id" [id] get-conf )
+   (GET "/api/v1/health" [] "Healthy")
+   (not-found notfound)))
+
+(defrecord Handler [http-handler semaphore orchestrator]
+  component/Lifecycle
+
+  (start [this]
+    (->> (app-routes)
+         (wrap-orchestrator orchestrator semaphore)
+         (assoc this :semaphore semaphore :http-handler)))
+
+  (stop [this]
+    (assoc this :http-handler nil)))
+
+(defn new-handler []
+  (map->Handler {:semaphore (d/deferred)}))
+

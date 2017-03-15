@@ -1,31 +1,45 @@
 (ns us.edwardstx.conf
-  (:require [aleph.http :as http]
-            [config.core :refer [env]]
-            [clojure.tools.nrepl.server :as nrepl]
-            [us.edwardstx.conf.handler :refer [app semaphore]])
+  (:require [config.core :refer [env]]
+            [com.stuartsierra.component :as component]
+            [us.edwardstx.conf.data.conf :as db-conf]
+            [us.edwardstx.conf.data.db :as db]
+            [us.edwardstx.conf.krypto :as krypto]
+            [us.edwardstx.conf.server :as server]
+            [us.edwardstx.conf.handler :refer [new-handler]]
+            [us.edwardstx.conf.ordinem :refer [new-ordinem]]
+            [us.edwardstx.conf.logging :refer [new-logging]]
+            [us.edwardstx.conf.orchestrator :as orchestrator])
   (:gen-class))
 
+(defonce system (atom {}))
 
-(defn create-server [p]
-  (http/start-server app {:port p}))
-
-(defonce http-server-atom (atom nil))
-(defonce nrepl-server-atom (atom nil))
-
-(defn start-or-restart-server [p]
-  (swap! http-server-atom (fn [old-server]
-                       (when old-server (.close old-server))
-                       (create-server p))))
-
-(defn stop-server []
-  (swap! http-server-atom (fn [old-server]
-                       (when old-server (.close old-server))
-                       nil)))
+(defn init-system [env]
+  (component/system-map
+   :db (db/new-database env)
+   :conf (component/using
+          (new-ordinem env)
+          [:db])
+   :logging (component/using
+             (new-logging)
+             [:conf])
+   :krypto (component/using
+            (krypto/new-krypto)
+            [:db])
+   :orchestrator (component/using
+                  (orchestrator/new-orchestrator)
+                  [:db :krypto])
+   :handler (component/using
+             (new-handler)
+             [:orchestrator])
+   :server (component/using
+            (server/new-http-server env)
+            [:handler])
+   ))
 
 (defn -main [& args]
-  (start-or-restart-server (:http-port env))
-  (reset! nrepl-server-atom (nrepl/start-server :port (:nrepl-port env)))
-  @semaphore
-  (stop-server)
-  (nrepl/stop-server @nrepl-server-atom)
-  )
+  (reset! system (init-system env))
+  (swap! system component/start)
+  (deref (get-in @system [:handler :semaphore]))
+  (component/stop @system)
+  (shutdown-agents))
+

@@ -1,25 +1,27 @@
 (ns us.edwardstx.conf.data.db
   (:require [hikari-cp.core :refer :all]
-            [config.core :refer [env]]))
+            [clojure.tools.logging :as log]
+            [com.stuartsierra.component :as component]))
 
-(def ds-options
-    {:jdbc-url (:jdbc-url env)
-     :classname (:classname env)
-     :subname (:subname env)
-     :username (:username env)
-     :password (:password env)
-     :subprotocol (:subprotocol env)})
+(defrecord Database [options datasource]
+  component/Lifecycle
 
-(def ds (make-datasource ds-options))
+  (start [this]
+    (log/info "Connecting to database: " (assoc options :password "*********"))
+    (let [ds (make-datasource options)]
+      (log/info "Connected to database")
+      (if-let [init-fn (:init-fn options)]
+        (init-fn ds))
+      (assoc this :datasource ds)))
 
-(defn convert-arrays [r]
-  (apply hash-map
-         (mapcat
-          (fn [c]
-            [(first c)
-             (let [v (second c)]
-               (if (instance? java.sql.Array v)
-                 (vec (.getArray v))
-                 v))])
-          r)))
+  (stop [this]
+    (log/info "Disconnecting from database")
+    (close-datasource datasource)
+    (assoc this :datasource nil)))
 
+
+(defn new-database [options]
+  (map->Database {:options (select-keys options [:jdbc-url :classname :subname :username :password :subprotocol])}))
+
+(defn get-connection [db]
+  {:connection (select-keys db [:datasource])})

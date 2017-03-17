@@ -30,7 +30,7 @@
                   [:db :krypto])
    :handler (component/using
              (new-handler)
-             [:orchestrator])
+             [:orchestrator :conf])
    :server (component/using
             (server/new-http-server env)
             [:handler])

@@ -1,4 +1,4 @@
-(defproject us.edwardstx/conf "0.1.1"
+(defproject us.edwardstx/conf "0.2.4"
   :description "Edwardstx.us configuration service"
   :url "https://github.com/BrianEdwards85/edwardstx_conf"
   :license {:name "Eclipse Public License"

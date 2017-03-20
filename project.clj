@@ -1,4 +1,4 @@
-(defproject us.edwardstx/conf "0.2.4"
+(defproject us.edwardstx/conf "0.2.5"
   :description "Edwardstx.us configuration service"
   :url "https://github.com/BrianEdwards85/edwardstx_conf"
   :license {:name "Eclipse Public License"
@@ -15,7 +15,7 @@
                  [yogthos/config "0.8"]
                  [com.rpl/specter "0.13.0"]
                  [compojure "1.5.1"]
-                 [aleph "0.4.2-alpha12"]
+                 [aleph "0.4.3"]
                  [com.stuartsierra/component "0.3.2"]
 
                  [buddy "1.2.0"]

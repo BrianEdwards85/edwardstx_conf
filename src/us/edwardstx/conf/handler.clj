@@ -37,9 +37,9 @@
 
 (defn app-routes []
   (routes
-   (GET "/" [] "Configuration Service")
-   (POST "/api/v1/conf/:id" [id] get-conf )
-   (GET "/api/v1/health" [] get-health)
+   (GET "/conf/" [] "Configuration Service")
+   (POST "/conf/api/v1/conf/:id" [id] get-conf )
+   (GET "/conf/api/v1/health" [] get-health)
    (not-found notfound)))
 
 (defrecord Handler [http-handler semaphore orchestrator conf]

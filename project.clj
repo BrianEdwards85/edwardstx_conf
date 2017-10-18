@@ -22,6 +22,8 @@
                  [clj-crypto "1.0.2"
                   :exclusions [org.bouncycastle/bcprov-jdk15on bouncycastle/bcprov-jdk16]]
 
+                 [com.novemberain/langohr "4.1.0"]
+
                  [org.clojure/tools.logging "0.3.1"]
                  [org.apache.logging.log4j/log4j-core "2.7"]
                  [org.apache.logging.log4j/log4j-slf4j-impl "2.7"]
